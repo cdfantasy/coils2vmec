@@ -74,18 +74,22 @@ sudo yum install gcc-gfortran python3-devel
 git clone https://github.com/cdfantasy/coils2vmec.git
 cd coils2vmec
 
-# Install in editable mode (recommended for development)
+# Install Python build dependencies
+pip install f90wrap numpy
+
+# Compile Fortran extensions
+make
+
+# Install the package in editable mode (recommended for development)
 pip install -e .
 
 # Or install directly
 pip install .
 ```
 
-The installation will automatically:
-- ✅ Check for required compilers
-- ✅ Compile Fortran extensions using f90wrap
-- ✅ Install all Python dependencies
-- ✅ Set up the package for immediate use
+**Installation Steps:**
+1. **`make`** - Compiles Fortran code and generates Python wrappers using f90wrap
+2. **`pip install -e .`** - Installs the Python package in editable mode
 
 ### Verify Installation
 

@@ -13,7 +13,7 @@ F90WRAP = f90wrap
 F2PY = f2py
 
 # Directories
-SRCDIR = src/fortran
+SRCDIR = src/coils2vmec/fortran
 BUILDDIR = build
 WRAPDIR = f90wrap_generated
 TESTDIR = tests
@@ -71,12 +71,12 @@ $(WRAPPER_F90): $(FORTRAN_SOURCES) kind_map.json
 	@echo "f90wrap files generated"
 
 # Compile Python extension module
-$(PYTHON_MODULE): $(WRAPPER_F90) $(FORTRAN_OBJECTS)
+$(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
 	@echo "Step 2: Building Python extension module..."
 	$(F2PY) -c \
 		--fcompiler=gnu95 \
 		--f90exec=$(FC) \
-		--f90flags="$(FFLAGS)" \
+		--f90flags="$(FFLAGS) -I." \
 		--opt="-O3" \
 		-m _$(MODULE_NAME) \
 		$(WRAPPER_F90) \
@@ -96,8 +96,11 @@ $(PYTHON_MODULE): $(WRAPPER_F90) $(FORTRAN_OBJECTS)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 # Dependencies
-fieldline_tracer_module.o: fieldline_tracer_module.f90
-DLSODE.o: DLSODE.f
+$(SRCDIR)/fieldline_tracer_module.o: $(SRCDIR)/fieldline_tracer_module.f90
+	$(FC) $(FFLAGS) -J. -c $< -o $@
+
+$(SRCDIR)/DLSODE.o: $(SRCDIR)/DLSODE.f
+	$(FC) $(FFLAGS) -c $< -o $@
 
 # Compile Fortran objects separately
 fortran_objects: $(FORTRAN_OBJECTS)
