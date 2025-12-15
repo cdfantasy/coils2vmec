@@ -1,0 +1,30 @@
+# coils2vmec package dependencies
+
+# Core numerical computing
+numpy>=1.20.0
+scipy>=1.7.0
+matplotlib>=3.0
+
+# Fortran-Python wrapper (for Fortran compilation)
+# Only needed if compiling from source
+# f90wrap>=0.2.6
+
+# Note: descur_python is included as a local module in coils2vmec/
+
+# Data storage
+h5py>=3.0.0
+
+# Visualization
+matplotlib>=3.3.0
+plotly>=5.0.0
+
+# Stellarator optimization and VMEC interface
+simsopt>=1.0.0
+
+# DESCUR surface fitting (Python implementation)
+# Must be installed before using run_descur_python
+descur_python
+
+# Optional: for Jupyter notebook support
+# jupyter>=1.0.0
+# ipywidgets>=7.0.0
