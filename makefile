@@ -76,7 +76,7 @@ $(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
 	$(F2PY) -c \
 		--fcompiler=gnu95 \
 		--f90exec=$(FC) \
-		--f90flags="$(FFLAGS) -I." \
+		--f90flags="$(FFLAGS) -I. -I$(SRCDIR)" \
 		--opt="-O3" \
 		-m _$(MODULE_NAME) \
 		$(WRAPPER_F90) \
@@ -97,7 +97,7 @@ $(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
 
 # Dependencies
 $(SRCDIR)/fieldline_tracer_module.o: $(SRCDIR)/fieldline_tracer_module.f90
-	$(FC) $(FFLAGS) -J. -c $< -o $@
+	$(FC) $(FFLAGS) -J$(SRCDIR) -c $< -o $@
 
 $(SRCDIR)/DLSODE.o: $(SRCDIR)/DLSODE.f
 	$(FC) $(FFLAGS) -c $< -o $@
