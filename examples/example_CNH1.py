@@ -12,7 +12,9 @@ import numpy as np
 from pathlib import Path
 
 # Add package to path if not installed
-sys.path.insert(0, str(Path(__file__).parent.parent))
+script_dir = Path(__file__).parent
+package_dir = script_dir.parent
+sys.path.insert(0, str(package_dir))
 
 from simsopt.field import BiotSavart, load_coils_from_makegrid_file
 from simsopt.geo import SurfaceRZFourier, ToroidalFlux
@@ -28,12 +30,12 @@ import coils2vmec as c2v
 # Device and file paths
 device_name = "h1"
 tag = "test"
-coil_file = '/home/usc/zkg/2_code/coils2vmec/coils.h1_measure_raw'
+coil_file = script_dir / 'coils.h1_measure_raw'
 
 # Output directories
-fieldline_dir = '/home/usc/zkg/2_code/coils2vmec/test/fieldlines'
+fieldline_dir = script_dir.parent / 'test' / 'fieldlines'
 output_directory = fieldline_dir
-vmec_output_dir = '/home/usc/zkg/2_code/coils2vmec/test/vmec'
+vmec_output_dir = script_dir.parent / 'test' / 'vmec'
 
 # Fieldline tracing parameters
 nlines = 99
@@ -61,12 +63,12 @@ plot_flag = False      # Master switch for plotting
 # Main Execution
 # =============================================================================
 print(f"Device: {device_name}")
-print(f"VMEC output directory: {vmec_output_dir}")
-print(f"Current run output directory: {output_directory}")
-print(f"Coil file: {coil_file}")
+print(f"VMEC output directory: {vmec_output_dir.name}")
+print(f"Current run output directory: {output_directory.name}")
+print(f"Coil file: {coil_file.name}")
 
 # Load coils for toroidal flux calculation
-coilpath = coil_file
+coilpath = str(coil_file)
 coils = load_coils_from_makegrid_file(filename=coilpath, order=20, ppp=36)
 
 if extcur is not None:
@@ -75,8 +77,8 @@ if extcur is not None:
 bs_tf = BiotSavart(coils)
 
 # Setup output paths
-hdf5_file = os.path.join(output_directory, 'fieldlines_output.h5')
-os.makedirs(output_directory, exist_ok=True)
+output_directory.mkdir(parents=True, exist_ok=True)
+hdf5_file = output_directory / 'fieldlines_output.h5'
 
 # =========================================================================
 # Step 1: Fieldline Tracing
@@ -88,11 +90,13 @@ if trace_flag:
     print(f"{'='*60}")
     
     # Import fieldline tracer module
-    sys.path.insert(0, '/home/usc/zkg/2_code/tracefieldline_python')
-    from fieldline_tracer import fieldline_tracer
+    try:
+        from fieldline_tracer import fieldline_tracer
+    except ImportError:
+        print("Warning: Could not import fieldline_tracer module")
     
     # Read coil data
-    coils_data = c2v.read_coils_file(coil_file, extcur=extcur, save_discrete=True)
+    coils_data = c2v.read_coils_file(str(coil_file), extcur=extcur, save_discrete=True)
     
     # Initialize coils in Fortran module
     fieldline_tracer.initialize_coils(coils_data)
@@ -120,16 +124,16 @@ if trace_flag:
     print(f"  LCFS: R={fieldlines_data['lcfs_rz'][0]:.6f}, Z={fieldlines_data['lcfs_rz'][1]:.6f}")
     
     # Save to HDF5
-    c2v.save_fieldlines_hdf5(fieldlines_data, hdf5_file, compress=True)
+    c2v.save_fieldlines_hdf5(fieldlines_data, str(hdf5_file), compress=True)
 
 # =========================================================================
 # Step 2: Data Processing and Iota Analysis
 # =========================================================================
 
-print("\n✓ Reshaping fieldline data")
+print("\u2713 Reshaping fieldline data")
 
 # Load from HDF5
-fieldlines_data = c2v.load_fieldlines_hdf5(hdf5_file)
+fieldlines_data = c2v.load_fieldlines_hdf5(str(hdf5_file))
 nline = fieldlines_data['nline']
 nphi = fieldlines_data['nphi']
 nturn = fieldlines_data['nturn']
@@ -207,10 +211,10 @@ if plot_flag:
 # Step 3: DESCUR Surface Fitting
 # =========================================================================
 
-outcurve_path = f"{output_directory}/outcurve"
+outcurve_path = output_directory / 'outcurve'
 
 if descur_flag:
-    print(f"✓ Generate and run DESCUR, output dir: {outcurve_path}")
+    print(f"✓ Generate and run DESCUR, output dir: {outcurve_path.name}")
     c2v.run_descur_python(
         R_lines=R_lines,
         Z_lines=Z_lines,
@@ -218,14 +222,14 @@ if descur_flag:
         lcfs_idx=lcfs_idx,
         nfp=1,
         nphi_descur=nphi_descur,
-        output_directory=output_directory,
+        output_directory=str(output_directory),
         config=config
     )
 else:
-    print(f"Skip DESCUR generation and run, check output dir: {outcurve_path}")
+    print(f"Skip DESCUR generation and run, check output dir: {outcurve_path.name}")
 
 # Load fitted surface
-surface = SurfaceRZFourier.from_vmec_input(outcurve_path)
+surface = SurfaceRZFourier.from_vmec_input(str(outcurve_path))
 
 # Optional self-intersection check
 intersecting_check = False
@@ -268,7 +272,7 @@ if plot_flag:
     )
 
 # Save VMEC input file
-c2v.save_vmec_input_for_surface(surface, bs_tf, extcur, mpol, ntor, lasym, nfp, Path(vmec_output_dir), tag=tag, device_name=device_name, AI=AI, vmec_run=False)
+c2v.save_vmec_input_for_surface(surface, bs_tf, extcur, mpol, ntor, lasym, nfp, vmec_output_dir, tag=tag, device_name=device_name, AI=AI, vmec_run=False)
 
 print("\n✓ All steps completed successfully!")
 
