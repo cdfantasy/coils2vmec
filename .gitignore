@@ -142,3 +142,6 @@ test/vmec/input.*
 test/vmec/wout_*
 deprecated/
 venv/
+
+# Third-party coil files (not public)
+coils.*
