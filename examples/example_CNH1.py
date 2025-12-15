@@ -55,7 +55,7 @@ config.ftol = 2e-6
 config.niter = 500
 
 # Control flags
-trace_flag = True      # Perform fieldline tracing
+trace_flag = False      # Perform fieldline tracing
 descur_flag = True     # Generate and run DESCUR
 plot_flag = False      # Master switch for plotting
 

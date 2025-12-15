@@ -74,30 +74,30 @@ class DescurFitter:
         self.logger = None
         
     def setup_logger(self, log_file: str = 'descur.log', console: bool = True):
-        """设置日志系统。
+        """Configure the logging system.
         
         Args:
-            log_file: 日志文件名
-            console: 是否同时输出到控制台
+            log_file: Log filename
+            console: Whether to also log to the console
         """
         self.logger = logging.getLogger('DESCUR')
         self.logger.setLevel(logging.INFO)
         
-        # 清除已有的 handlers
+        # Clear any existing handlers
         self.logger.handlers.clear()
         
-        # 文件 handler
+        # File handler with timestamp
         file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
         file_handler.setLevel(logging.INFO)
-        file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_formatter = logging.Formatter('%(message)s')  # Simple format for file too
         file_handler.setFormatter(file_formatter)
         self.logger.addHandler(file_handler)
         
-        # 控制台 handler
+        # Console handler without timestamp
         if console:
             console_handler = logging.StreamHandler()
             console_handler.setLevel(logging.INFO)
-            console_formatter = logging.Formatter('%(message)s')
+            console_formatter = logging.Formatter('%(message)s')  # No timestamp/level
             console_handler.setFormatter(console_formatter)
             self.logger.addHandler(console_handler)
         
@@ -167,32 +167,33 @@ class DescurFitter:
     def prepare_from_fieldlines(self, R_lines: np.ndarray, Z_lines: np.ndarray, 
                                Phi_lines: np.ndarray, lcfs_idx: int, 
                                nfp: int = 1, nphi_descur: int = 72) -> Tuple[np.ndarray, np.ndarray]:
-        """直接从磁力线追踪结果准备 DESCUR 输入数据。
-        
-        此方法从磁力线追踪结果中提取 LCFS 数据，并将其转换为 DESCUR 拟合所需的格式，
-        避免了先写入文件再读取的中间步骤。
-        
+        """Prepare DESCUR input directly from field-line tracing results.
+
+        This method extracts LCFS data from field-line tracing results and converts
+        it into the format required for DESCUR fitting, avoiding intermediate
+        write/read steps.
+
         Args:
-            R_lines: R坐标数组，形状为 (nlines, nturns, nphi)
-            Z_lines: Z坐标数组，形状为 (nlines, nturns, nphi)
-            Phi_lines: Phi坐标数组，形状为 (nlines, nturns, nphi)
-            lcfs_idx: LCFS 磁力线的索引（从0开始）
-            nfp: 场周期数，默认为1
-            nphi_descur: 环向角点数，默认为72
-            
+            R_lines: Array of R coordinates, shape (nlines, nturns, nphi)
+            Z_lines: Array of Z coordinates, shape (nlines, nturns, nphi)
+            Phi_lines: Array of phi coordinates, shape (nlines, nturns, nphi)
+            lcfs_idx: Index of the LCFS field line (0-based)
+            nfp: Number of field periods, default 1
+            nphi_descur: Number of toroidal angle points for DESCUR, default 72
+
         Returns:
-            rin, zin: 准备好的 R, Z 数组，形状为 (ntheta, nphi)
-            
+            rin, zin: Prepared R, Z arrays with shape (ntheta, nphi)
+
         Example:
             >>> from descur_python import DescurFitter
             >>> fitter = DescurFitter()
-            >>> # 假设已经从磁力线追踪得到 R_lines, Z_lines, Phi_lines
+            >>> # Assume R_lines, Z_lines, Phi_lines come from field-line tracing
             >>> rin, zin = fitter.prepare_from_fieldlines(
             ...     R_lines, Z_lines, Phi_lines, lcfs_idx=50, nfp=1, nphi_descur=72
             ... )
             >>> results = fitter.fit(rin, zin)
         """
-        # 提取 LCFS 数据并转置，使其形状为 (nphi_total, nturns)
+        # Extract LCFS data and transpose to shape (nphi_total, nturns)
         R_lcfs = R_lines[lcfs_idx].T
         Z_lcfs = Z_lines[lcfs_idx].T
         phi_lcfs = Phi_lines[lcfs_idx].T
@@ -202,16 +203,16 @@ class DescurFitter:
         Z_slice = Z_lcfs[0, :]
 
         nturns = R_lcfs.shape[1]
-        # 初始化排序索引和访问标记
+        # Initialize sorting indices and visited flags
         sorted_indices = np.zeros(nturns, dtype=int)
         visited = np.zeros(nturns, dtype=bool)
 
-        # 从第一个点开始
+        # Start from the first point
         current_index = 0
         sorted_indices[0] = current_index
         visited[current_index] = True
 
-        # 贪心最近邻搜索
+        # Greedy nearest-neighbor search
         for k in range(1, nturns):
             current_R = R_slice[current_index]
             current_Z = Z_slice[current_index]
@@ -219,7 +220,7 @@ class DescurFitter:
             min_dist_sq = np.inf
             next_index = -1
             
-            # 寻找最近的未访问点
+            # Find the nearest unvisited point
             for i in range(nturns):
                 if not visited[i]:
                     dist_sq = (R_slice[i] - current_R)**2 + (Z_slice[i] - current_Z)**2
@@ -228,7 +229,7 @@ class DescurFitter:
                         min_dist_sq = dist_sq
                         next_index = i
             
-            # 更新当前点并记录
+            # Update the current point and record it
             if next_index != -1:
                 current_index = next_index
                 sorted_indices[k] = current_index
@@ -236,51 +237,51 @@ class DescurFitter:
             else:
                 break
 
-        # 应用排序结果
+        # Apply the ordering result
         R_lcfs_reordered = R_lcfs[:, sorted_indices]
         Z_lcfs_reordered = Z_lcfs[:, sorted_indices]
         phi_lcfs_reordered = phi_lcfs[:, sorted_indices]
 
-        # 确保第一个环向角点为0
+        # Ensure the first toroidal angle is zero
         phi_lcfs_reordered[0, :] = 0
         
-        # 获取总环向角点数
+        # Total number of toroidal angles
         nphi_total = R_lcfs.shape[0]
         
-        # 选择要输出的环向角点索引（均匀采样）
+        # Select toroidal angle indices for output (uniform sampling)
         descur_idx = np.linspace(0, nphi_total, nphi_descur, endpoint=False).astype(int)
         
-        # 提取对应的数据
+        # Extract sampled data
         R_lcfs_descur = R_lcfs_reordered[descur_idx]
         Z_lcfs_descur = Z_lcfs_reordered[descur_idx]
         phi_lcfs_descur = phi_lcfs_reordered[descur_idx]
         
-        # 获取极向转动次数（nturns）
+        # Number of poloidal turns (nturns)
         nturns = R_lcfs.shape[1]
         
-        # 设置参数
+        # Set parameters
         self.ntheta = nturns
         self.nphi = nphi_descur
         self.nfp = nfp
         
-        # 检查维度
+        # Validate dimensions
         if self.ntheta > self.config.nu:
             raise ValueError(f"ntheta ({self.ntheta}) > nu ({self.config.nu})")
         if self.nphi > self.config.nv:
             raise ValueError(f"nphi ({self.nphi}) > nv ({self.config.nv})")
         
-        # 返回格式：rin, zin 的形状为 (ntheta, nphi)
-        # R_lcfs_descur 当前形状为 (nphi, nturns)，需要转置为 (nturns, nphi)
+        # Return format: rin, zin have shape (ntheta, nphi)
+        # R_lcfs_descur currently has shape (nphi, nturns); transpose to (nturns, nphi)
         rin = R_lcfs_descur.T
         zin = Z_lcfs_descur.T
         
         if self.logger:
-            self.logger.info(f"✓ 从磁力线数据准备 DESCUR 输入:")
-            self.logger.info(f"  LCFS 索引: {lcfs_idx}")
-            self.logger.info(f"  场周期数 (nfp): {nfp}")
-            self.logger.info(f"  极向点数 (ntheta): {self.ntheta}")
-            self.logger.info(f"  环向平面数 (nphi): {self.nphi}")
-            self.logger.info(f"  数据形状: rin{rin.shape}, zin{zin.shape}")
+            self.logger.info(f"Prepared DESCUR input from field-line data:")
+            self.logger.info(f"  LCFS index: {lcfs_idx}")
+            self.logger.info(f"  Field periods (nfp): {nfp}")
+            self.logger.info(f"  Poloidal points (ntheta): {self.ntheta}")
+            self.logger.info(f"  Toroidal planes (nphi): {self.nphi}")
+            self.logger.info(f"  Data shape: rin{rin.shape}, zin{zin.shape}")
         
         return rin, zin
     
@@ -289,12 +290,12 @@ class DescurFitter:
         
         Args:
             rin, zin: Input R, Z arrays of shape (ntheta, nphi)
-            log_file: 日志文件名
+            log_file: Log filename
             
         Returns:
             Dictionary containing Fourier coefficients and metadata
         """
-        # 设置日志
+        # Set up logging
         if self.logger is None:
             self.setup_logger(log_file)
         
@@ -570,16 +571,16 @@ class DescurFitter:
         
         time_on = time.time()
         
-        # 确定工作进程数
+        # Determine worker count
         if n_workers is None:
             import os
             n_workers = os.cpu_count()
         
         self.logger.info(f"\n{'='*60}")
-        self.logger.info(f"并行拟合 {self.nphi} 个环向平面，使用 {n_workers} 个工作进程")
+        self.logger.info(f"Parallel fitting {self.nphi} toroidal planes using {n_workers} workers")
         self.logger.info(f"{'='*60}\n")
         
-        # 准备所有平面的输入数据
+        # Prepare inputs for all planes
         plane_tasks = []
         for nplane in range(self.nphi):
             plane_tasks.append((
@@ -591,9 +592,9 @@ class DescurFitter:
                 self.z0n[nplane]
             ))
         
-        # 使用进程池并行处理
+        # Parallel processing with a process pool
         with ProcessPoolExecutor(max_workers=n_workers) as executor:
-            # 提交所有任务
+            # Submit all tasks
             futures = {
                 executor.submit(
                     self._fit_single_plane,
@@ -602,17 +603,52 @@ class DescurFitter:
                 for nplane, rin_plane, zin_plane, angle_plane, r0n_val, z0n_val in plane_tasks
             }
             
-            # 收集结果
+            # Collect results and statistics
             completed = 0
+            stats_list = []  # Store (iterations, rms_error, gradient, specw, modeno, delt)
+            
             for future in as_completed(futures):
-                nplane, result, log_str = future.result()
+                nplane, result, log_str, stats = future.result()
                 result1[:, nplane] = result
+                stats_list.append(stats)
                 
-                # 输出该平面的日志
+                # Write detailed log to file only (disable console temporarily)
+                console_handlers = [h for h in self.logger.handlers if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)]
+                for handler in console_handlers:
+                    self.logger.removeHandler(handler)
+                
                 self.logger.info(log_str)
                 
+                # Re-enable console handlers
+                for handler in console_handlers:
+                    self.logger.addHandler(handler)
+                
                 completed += 1
-                self.logger.info(f"\n进度: {completed}/{self.nphi} 个平面已完成\n")
+                # Console progress (visible to user)
+                print(f"Progress: {completed}/{self.nphi} planes completed", end='\r')
+            
+            print()  # New line after progress
+            
+            # Compute and display summary statistics
+            iterations = [s[0] for s in stats_list]
+            rms_errors = [s[1] for s in stats_list]
+            gradients = [s[2] for s in stats_list]
+            specws = [s[3] for s in stats_list]
+            modenos = [s[4] for s in stats_list]
+            delts = [s[5] for s in stats_list]
+            
+            self.logger.info("\n" + "="*70)
+            self.logger.info("Summary Statistics for All Toroidal Planes")
+            self.logger.info("="*70)
+            self.logger.info(f"{'Metric':<20} {'Average':>12} {'Maximum':>12} {'Minimum':>12}")
+            self.logger.info("-"*70)
+            self.logger.info(f"{'Iterations':<20} {np.mean(iterations):>12.1f} {np.max(iterations):>12d} {np.min(iterations):>12d}")
+            self.logger.info(f"{'RMS Error':<20} {np.mean(rms_errors):>12.3e} {np.max(rms_errors):>12.3e} {np.min(rms_errors):>12.3e}")
+            self.logger.info(f"{'Gradient':<20} {np.mean(gradients):>12.3e} {np.max(gradients):>12.3e} {np.min(gradients):>12.3e}")
+            self.logger.info(f"{'<M> (Spectral)':<20} {np.mean(specws):>12.2f} {np.max(specws):>12.2f} {np.min(specws):>12.2f}")
+            self.logger.info(f"{'MAX m':<20} {np.mean(modenos):>12.1f} {int(np.max(modenos)):>12d} {int(np.min(modenos)):>12d}")
+            self.logger.info(f"{'DELT':<20} {np.mean(delts):>12.2e} {np.max(delts):>12.2e} {np.min(delts):>12.2e}")
+            self.logger.info("="*70)
         
         time_off = time.time()
         
@@ -627,21 +663,22 @@ class DescurFitter:
     
     def _fit_single_plane(self, nplane: int, rin_plane: np.ndarray, 
                          zin_plane: np.ndarray, angle_plane: np.ndarray,
-                         r0n_val: float, z0n_val: float) -> Tuple[int, np.ndarray, str]:
-        """拟合单个环向平面（用于并行计算）。
-        
+                         r0n_val: float, z0n_val: float) -> Tuple[int, np.ndarray, str, tuple]:
+        """Fit a single toroidal plane (used for parallel computation).
+
         Args:
-            nplane: 平面索引
-            rin_plane: 该平面的 R 坐标
-            zin_plane: 该平面的 Z 坐标
-            angle_plane: 该平面的角度
-            r0n_val: R 轴位置
-            z0n_val: Z 轴位置
-            
+            nplane: Plane index
+            rin_plane: R coordinates for the plane
+            zin_plane: Z coordinates for the plane
+            angle_plane: Angles for the plane
+            r0n_val: R-axis position
+            z0n_val: Z-axis position
+
         Returns:
-            nplane: 平面索引
-            result: 优化后的 rho 系数
-            log_str: 日志字符串
+            nplane: Plane index
+            result: Optimized rho coefficients
+            log_str: Log output string
+            stats: Tuple of (iterations, rms_error, gradient, specw, modeno, delt)
         """
         log_lines = []
         log_lines.append(f"\n{'='*60}")
@@ -668,7 +705,7 @@ class DescurFitter:
         gmin = 1e10
         too_large = 1e6
         gtrig = 1e-4
-        gradient_threshold = 1e-5  # 添加梯度阈值
+        gradient_threshold = 1e-5  # Gradient threshold for early convergence
         
         xstore[:] = xvec[:]
         
@@ -714,16 +751,18 @@ class DescurFitter:
                 log_lines.append(f"{iter:10d} {fsq:16.3e} {gout:16.3e} "
                                f"{specw_out:10.2f} {modeno:8d} {delt:10.2e}")
             
-            # 检查是否满足梯度收敛条件
+            # Check gradient convergence condition
             gout = np.sqrt(gnorm)
             if gout < gradient_threshold:
-                log_lines.append(f"\n收敛: 梯度 {gout:.3e} < {gradient_threshold:.3e} (第 {iter} 次迭代),RMS ERROR = {fsq:.3e}")
+                log_lines.append(f"\nConverged: gradient {gout:.3e} < {gradient_threshold:.3e} (iteration {iter}), RMS ERROR = {fsq:.3e}")
                 log_lines.append(f"{iter:10d} {fsq:16.3e} {gout:16.3e} "
                                f"{specw_out:10.2f} {modeno:8d} {delt:10.2e}")
                 break
         
         result = xvec[:2*self.mpol]
-        return nplane, result, '\n'.join(log_lines)
+        # Collect final statistics for summary
+        final_stats = (iter, fsq, gout, specw_out, modeno, delt)
+        return nplane, result, '\n'.join(log_lines), final_stats
     
     def _amplitud_single(self, rcenter: float, zcenter: float, angin: np.ndarray,
                         xin: np.ndarray, yin: np.ndarray, 
