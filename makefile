@@ -83,6 +83,8 @@ $(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
 		$(FORTRAN_OBJECTS) \
 		--build-dir $(BUILDDIR)
 	@echo "Step 3: Python module built successfully!"
+	@echo "Removing f2py-generated duplicate package directory..."
+	@rm -rf coils2vmec/
 
 # ==============================================================================
 # Fortran compilation
