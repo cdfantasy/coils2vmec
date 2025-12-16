@@ -150,6 +150,7 @@ clean:
 	rm -f *.o *.mod *.so *.dylib
 	rm -f f90wrap_*.f90 $(MODULE_NAME).py .f2py_f2cmap
 	rm -rf $(BUILDDIR) $(WRAPDIR) __pycache__
+	rm -rf coils2vmec/  # Remove f2py generated package directory
 	find . -name "*.pyc" -delete
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
