@@ -13,7 +13,7 @@ cd coils2vmec
 pip install -e .
 
 # 3. Compile Fortran extension
-make clean && make
+clear
 
 # 4. Verify installation
 python -c "from coils2vmec.fieldline_tracer import fieldline_tracer; fieldline_tracer.set_verbose(True); print('✓ Installation successful!')"

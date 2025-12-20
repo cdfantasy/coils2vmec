@@ -14,6 +14,7 @@ F2PY = f2py
 
 # Directories
 SRCDIR = src/coils2vmec/fortran
+SRCDIR_ABS := $(abspath $(SRCDIR))
 BUILDDIR = build
 WRAPDIR = f90wrap_generated
 TESTDIR = tests
@@ -76,7 +77,7 @@ $(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
 	$(F2PY) -c \
 		--fcompiler=gnu95 \
 		--f90exec=$(FC) \
-		--f90flags="$(FFLAGS) -I. -I$(SRCDIR)" \
+		--f90flags="$(FFLAGS) -I$(SRCDIR_ABS)" \
 		--opt="-O3" \
 		-m _$(MODULE_NAME) \
 		$(WRAPPER_F90) \
