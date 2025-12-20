@@ -77,7 +77,7 @@ cd coils2vmec
 # Install Python build dependencies
 pip install f90wrap numpy
 
-# Compile Fortran extensions (Makefile moved to src/fortran)
+# Compile Fortran extensions
 make 
 
 # Install the package in editable mode (recommended for development)
@@ -88,7 +88,7 @@ pip install .
 ```
 
 **Installation Steps:**
-1. **`make -C src/fortran`** - Compiles Fortran code and generates Python wrappers using f90wrap
+1. **`make`** - Compiles Fortran code and generates Python wrappers using f90wrap
 2. **`pip install -e .`** - Installs the Python package in editable mode
 
 ### Verify Installation
@@ -204,7 +204,7 @@ coils2vmec/
 │   │   ├── plotting.py          # Visualization
 │   │   ├── utils.py             # Utilities
 │   │   ├── fieldline_tracer.py  # f90wrap interface
-│   └── fortran/                 # Fortran sources (moved up from coils2vmec/)
+│   └── fortran/                 # Fortran sources
 │       ├── fieldline_tracer_module.f90
 │       ├── DLSODE.f
 │       ├── hybrd.f
