@@ -1,113 +1,164 @@
 # ==============================================================================
-# Makefile for fieldline_tracer Python interface using f90wrap
+# Makefile for coils2vmec Python-Fortran interface
 # ==============================================================================
 
 # Compiler settings
 FC = gfortran
 FFLAGS = -O2 -fPIC -Wall -Wextra -fall-intrinsics
+FFLAGS_DEBUG = -g -fPIC -Wall -Wextra -fcheck=all -fbacktrace
 LDFLAGS = -shared
 
 # Python settings
 PYTHON = python3
 F90WRAP = f90wrap
 F2PY = f2py
+PIP = $(PYTHON) -m pip
 
 # Directories
-SRCDIR = src/coils2vmec/fortran
-SRCDIR_ABS := $(abspath $(SRCDIR))
+FORTRAN_DIR = src/fortran
+PYTHON_DIR = src/coils2vmec
 BUILDDIR = build
-WRAPDIR = f90wrap_generated
 TESTDIR = tests
-DISTDIR = dist
+
+# Absolute paths
+FORTRAN_DIR_ABS := $(abspath $(FORTRAN_DIR))
+PYTHON_DIR_ABS := $(abspath $(PYTHON_DIR))
+BUILDDIR_ABS := $(abspath $(BUILDDIR))
 
 # Source files
-MAIN_MODULE = $(SRCDIR)/fieldline_tracer_module.f90
-DEPENDENCIES = $(SRCDIR)/DLSODE.f
+MAIN_MODULE = $(FORTRAN_DIR)/fieldline_tracer_module.f90
+DEPENDENCIES = $(FORTRAN_DIR)/DLSODE.f
 FORTRAN_SOURCES = $(MAIN_MODULE) $(DEPENDENCIES)
 FORTRAN_OBJECTS = $(addsuffix .o, $(basename $(FORTRAN_SOURCES)))
+FORTRAN_MODS = $(FORTRAN_DIR)/*.mod
 
 # Python module name
 MODULE_NAME = fieldline_tracer
-PYTHON_MODULE = _$(MODULE_NAME)*.so
+SO_NAME = _$(MODULE_NAME)
 
 # Generated files
-WRAPPER_F90 = f90wrap_fieldline_tracer_module.f90
-PYTHON_WRAPPER = $(MODULE_NAME).py
+WRAPPER_F90 = $(BUILDDIR)/f90wrap_fieldline_tracer_module.f90
+PYTHON_WRAPPER = $(BUILDDIR)/$(MODULE_NAME).py
+SO_FILE = $(BUILDDIR)/$(SO_NAME)*.so
+TARGET_SO = $(PYTHON_DIR)/$(SO_NAME).so
+TARGET_PY = $(PYTHON_DIR)/$(MODULE_NAME).py
 
-# Version info
+# Build mode (release or debug)
+BUILD_MODE ?= release
+ifeq ($(BUILD_MODE),debug)
+    FFLAGS = $(FFLAGS_DEBUG)
+endif
+
+# Version
 VERSION = 0.1.0
-
-# Detect OS
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-    SHLIB_EXT = .so
-endif
-ifeq ($(UNAME_S),Darwin)
-    SHLIB_EXT = .dylib
-endif
 
 # ==============================================================================
 # Main targets
 # ==============================================================================
 
-.PHONY: all build install test clean clean_all help
+.PHONY: all build fortran wrapper extension install clean clean_all help status check
 
 all: build
 
-build: $(PYTHON_MODULE)
+build: fortran wrapper extension copy
 
 # ==============================================================================
-# Python module build
+# Step 1: Compile Fortran source code
 # ==============================================================================
 
-# Generate f90wrap interface
+fortran: $(FORTRAN_OBJECTS)
+	@echo "✓ Step 1 complete: Fortran objects compiled"
+
+$(FORTRAN_DIR)/%.o: $(FORTRAN_DIR)/%.f90
+	@echo "Compiling Fortran 90: $<"
+	$(FC) $(FFLAGS) -J$(FORTRAN_DIR) -c $< -o $@
+
+$(FORTRAN_DIR)/%.o: $(FORTRAN_DIR)/%.f
+	@echo "Compiling Fortran 77: $<"
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# Specific dependencies
+$(FORTRAN_DIR)/fieldline_tracer_module.o: $(FORTRAN_DIR)/fieldline_tracer_module.f90
+	@echo "Compiling main module: $<"
+	$(FC) $(FFLAGS) -J$(FORTRAN_DIR) -c $< -o $@
+
+$(FORTRAN_DIR)/DLSODE.o: $(FORTRAN_DIR)/DLSODE.f
+	@echo "Compiling DLSODE library: $<"
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# ==============================================================================
+# Step 2: Generate f90wrap wrapper code
+# ==============================================================================
+
+wrapper: $(WRAPPER_F90)
+
 $(WRAPPER_F90): $(FORTRAN_SOURCES) kind_map.json
-	@echo "Step 1: Generating f90wrap interface..."
-	$(F90WRAP) -m $(MODULE_NAME) \
-		--kind-map kind_map.json \
-		$(MAIN_MODULE) \
+	@echo "✓ Step 2: Generating f90wrap interface..."
+	@mkdir -p $(BUILDDIR)
+	cd $(BUILDDIR) && $(F90WRAP) -m $(MODULE_NAME) \
+		--kind-map ../kind_map.json \
+		../$(MAIN_MODULE) \
 		--verbose
 	@echo "Fixing precision in generated wrappers..."
-	@sed -i 's/real(4)/real(8)/g' f90wrap_*.f90 || sed -i '' 's/real(4)/real(8)/g' f90wrap_*.f90
-	@echo "f90wrap files generated"
+	@sed -i 's/real(4)/real(8)/g' $(BUILDDIR)/f90wrap_*.f90 2>/dev/null || \
+	 sed -i '' 's/real(4)/real(8)/g' $(BUILDDIR)/f90wrap_*.f90
+	@if [ -f "$(BUILDDIR)/$(MODULE_NAME).py" ]; then \
+		echo "Fixing import statements in $(MODULE_NAME).py..."; \
+		sed -i 's/^import _$(MODULE_NAME)$$/from . import _$(MODULE_NAME)/' $(BUILDDIR)/$(MODULE_NAME).py; \
+		sed -i 's/^import _$(MODULE_NAME) as /from . import _$(MODULE_NAME) as /' $(BUILDDIR)/$(MODULE_NAME).py; \
+		echo "✓ Import statements fixed"; \
+	else \
+		echo "Warning: $(MODULE_NAME).py not found for import fixing"; \
+	fi
+	@echo "✓ Wrapper files generated in $(BUILDDIR)"
 
-# Compile Python extension module
-$(PYTHON_MODULE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
-	@echo "Step 2: Building Python extension module..."
-	$(F2PY) -c \
+# ==============================================================================
+# Step 3: Build Python extension module (.so)
+# ==============================================================================
+
+extension: $(SO_FILE)
+
+$(SO_FILE): $(FORTRAN_OBJECTS) $(WRAPPER_F90)
+	@echo "✓ Step 3: Building Python extension module..."
+	cd $(BUILDDIR) && $(F2PY) -c \
 		--fcompiler=gnu95 \
 		--f90exec=$(FC) \
-		--f90flags="$(FFLAGS) -I$(SRCDIR_ABS)" \
+		--f90flags="$(FFLAGS) -I$(FORTRAN_DIR_ABS)" \
 		--opt="-O3" \
-		-m _$(MODULE_NAME) \
-		$(WRAPPER_F90) \
-		$(FORTRAN_OBJECTS) \
-		--build-dir $(BUILDDIR)
-	@echo "Step 3: Python module built successfully!"
-	@echo "Removing f2py-generated duplicate package directory..."
-	@rm -rf coils2vmec/
+		-m $(SO_NAME) \
+		f90wrap_fieldline_tracer_module.f90 \
+		$(abspath $(FORTRAN_OBJECTS))
+	@echo "✓ Extension module built in $(BUILDDIR)"
 
 # ==============================================================================
-# Fortran compilation
+# Step 4: Copy .so and .py to Python directory
 # ==============================================================================
 
-# Pattern rules
-%.o: %.f90
-	$(FC) $(FFLAGS) -c $< -o $@
+copy: $(TARGET_SO) $(TARGET_PY)
 
-%.o: %.f
-	$(FC) $(FFLAGS) -c $< -o $@
+$(TARGET_SO): $(SO_FILE) | $(PYTHON_DIR)
+	@echo "Copying .so file to Python directory..."
+	cp $(BUILDDIR)/$(SO_NAME)*.so $(TARGET_SO)
+	@echo "✓ Copied: $(TARGET_SO)"
 
-# Dependencies
-$(SRCDIR)/fieldline_tracer_module.o: $(SRCDIR)/fieldline_tracer_module.f90
-	$(FC) $(FFLAGS) -J$(SRCDIR) -c $< -o $@
+$(TARGET_PY): $(PYTHON_WRAPPER) | $(PYTHON_DIR)
+	@echo "Copying Python wrapper to Python directory..."
+	cp $(PYTHON_WRAPPER) $(TARGET_PY)
+	@echo "✓ Copied: $(TARGET_PY)"
 
-$(SRCDIR)/DLSODE.o: $(SRCDIR)/DLSODE.f
-	$(FC) $(FFLAGS) -c $< -o $@
+# ==============================================================================
+# Install via pip
+# ==============================================================================
 
-# Compile Fortran objects separately
-fortran_objects: $(FORTRAN_OBJECTS)
-	@echo "Fortran objects compiled"
+install:
+	@echo "Installing package via pip..."
+	$(PIP) install -e .
+	@echo "✓ Package installed"
+
+uninstall:
+	@echo "Uninstalling package..."
+	$(PIP) uninstall -y coils2vmec || true
+	@echo "✓ Package uninstalled"
 
 # ==============================================================================
 # Testing
@@ -115,34 +166,70 @@ fortran_objects: $(FORTRAN_OBJECTS)
 
 test: build
 	@echo "Testing module import..."
-	$(PYTHON) -c "import $(MODULE_NAME); print('✓ Successfully imported $(MODULE_NAME)')"
-	@echo "Testing with sample data..."
-	$(PYTHON) test_import.py
+	$(PYTHON) -c "import sys; sys.path.insert(0, '$(PYTHON_DIR_ABS)'); import $(MODULE_NAME); print('✓ Successfully imported $(MODULE_NAME)')"
 
-test_fortran: fortran_objects
-	@echo "Testing Fortran compilation..."
-	$(FC) $(FFLAGS) -o test_fortran test_fortran.f90 $(FORTRAN_OBJECTS)
-	@echo "Fortran test program compiled"
+test_installed:
+	@echo "Testing installed package..."
+	$(PYTHON) -c "import coils2vmec.$(MODULE_NAME); print('✓ Successfully imported from installed package')"
 
 # ==============================================================================
-# Installation
+# Utility targets
 # ==============================================================================
 
-install: setup.py
-	$(PYTHON) -m pip install .
+# Check dependencies
+check:
+	@echo "Checking dependencies..."
+	@command -v $(FC) >/dev/null 2>&1 || { echo "✗ Error: $(FC) not found"; exit 1; }
+	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "✗ Error: $(PYTHON) not found"; exit 1; }
+	@$(PYTHON) -c "import numpy" 2>/dev/null || { echo "✗ Error: numpy not installed"; exit 1; }
+	@command -v $(F90WRAP) >/dev/null 2>&1 || { echo "✗ Error: f90wrap not found"; exit 1; }
+	@command -v $(F2PY) >/dev/null 2>&1 || { echo "✗ Error: f2py not found"; exit 1; }
+	@echo "✓ All dependencies found"
 
-develop:
-	$(PYTHON) -m pip install -e .
+# Show build status
+status:
+	@echo "==================================="
+	@echo "Build Status for coils2vmec"
+	@echo "==================================="
+	@echo ""
+	@echo "1. Fortran objects:"
+	@for obj in $(FORTRAN_OBJECTS); do \
+		if [ -f $$obj ]; then \
+			echo "  ✓ $$obj"; \
+		else \
+			echo "  ✗ $$obj (missing)"; \
+		fi \
+	done
+	@echo ""
+	@echo "2. Wrapper files:"
+	@if [ -f $(WRAPPER_F90) ]; then echo "  ✓ $(WRAPPER_F90)"; else echo "  ✗ Wrapper .f90 not generated"; fi
+	@if [ -f $(PYTHON_WRAPPER) ]; then echo "  ✓ $(PYTHON_WRAPPER)"; else echo "  ✗ Wrapper .py not generated"; fi
+	@echo ""
+	@echo "3. Extension module:"
+	@if ls $(BUILDDIR)/$(SO_NAME)*.so >/dev/null 2>&1; then \
+		echo "  ✓ Extension built in $(BUILDDIR)"; \
+	else \
+		echo "  ✗ Extension not built"; \
+	fi
+	@echo ""
+	@echo "4. Python directory:"
+	@if [ -f $(TARGET_SO) ]; then echo "  ✓ $(TARGET_SO)"; else echo "  ✗ .so not copied"; fi
+	@if [ -f $(TARGET_PY) ]; then echo "  ✓ $(TARGET_PY)"; else echo "  ✗ .py not copied"; fi
+	@echo ""
 
-# ==============================================================================
-# Distribution
-# ==============================================================================
+# Create necessary directories
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
 
-sdist: setup.py
-	$(PYTHON) setup.py sdist
+$(PYTHON_DIR):
+	@mkdir -p $(PYTHON_DIR)
 
-bdist_wheel: setup.py
-	$(PYTHON) setup.py bdist_wheel
+# Debug build
+debug:
+	$(MAKE) BUILD_MODE=debug build
+
+# Rebuild from scratch
+rebuild: clean build
 
 # ==============================================================================
 # Cleanup
@@ -150,45 +237,76 @@ bdist_wheel: setup.py
 
 clean:
 	@echo "Cleaning build files..."
-	rm -f *.o *.mod *.so *.dylib
-	rm -f f90wrap_*.f90 $(MODULE_NAME).py .f2py_f2cmap
-	rm -rf $(BUILDDIR) $(WRAPDIR) __pycache__
-	rm -rf coils2vmec/  # Remove f2py generated package directory
+	rm -f $(FORTRAN_DIR)/*.o $(FORTRAN_DIR)/*.mod
+	rm -rf $(BUILDDIR)
+	rm -f $(PYTHON_DIR)/*.so
+	rm -f $(PYTHON_DIR)/$(MODULE_NAME).py
 	find . -name "*.pyc" -delete
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	@echo "✓ Build files cleaned"
 
 clean_all: clean
 	@echo "Cleaning all generated files..."
-	rm -f $(PYTHON_MODULE)
-	rm -rf $(DISTDIR) *.egg-info
-	rm -f setup.py
+	rm -rf dist *.egg-info
+	rm -rf .pytest_cache
+	@echo "✓ All files cleaned"
 
-distclean: clean_all
-	@echo "Full clean complete"
+distclean: clean_all uninstall
+	@echo "✓ Full clean complete"
 
 # ==============================================================================
 # Help
 # ==============================================================================
 
 help:
-	@echo "Field Line Tracer - Python Interface Makefile"
-	@echo "============================================="
+	@echo "======================================"
+	@echo "coils2vmec Makefile"
+	@echo "======================================"
 	@echo ""
-	@echo "Available commands:"
-	@echo "  make               - Build Python module (default)"
-	@echo "  make build         - Build Python module"
-	@echo "  make fortran_objects - Compile Fortran objects only"
-	@echo "  make test          - Test the built module"
-	@echo "  make install       - Install via pip"
-	@echo "  make develop       - Install in development mode"
+	@echo "Project structure:"
+	@echo "  Fortran source:  $(FORTRAN_DIR)/"
+	@echo "  Python package:  $(PYTHON_DIR)/"
+	@echo "  Build directory: $(BUILDDIR)/"
+	@echo ""
+	@echo "Build workflow:"
+	@echo "  1. make          - Build extension (Fortran + wrapper + .so)"
+	@echo "  2. pip install . - Register to system (run separately)"
+	@echo ""
+	@echo "  Details:"
+	@echo "    Step 1: Compile Fortran → .o files"
+	@echo "    Step 2: Generate f90wrap wrapper → .f90, .py"
+	@echo "    Step 3: Build extension → .so file"
+	@echo "    Step 4: Copy to Python directory"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  make               - Build extension (default)"
+	@echo "  make build         - Complete build process"
+	@echo "  make fortran       - Compile Fortran code only"
+	@echo "  make wrapper       - Generate f90wrap wrappers"
+	@echo "  make extension     - Build .so extension"
+	@echo "  make copy          - Copy files to Python dir"
+	@echo "  make install       - Install via pip (run after make)"
+	@echo "  make uninstall     - Uninstall package"
+	@echo ""
+	@echo "Testing:"
+	@echo "  make test          - Test local build"
+	@echo "  make test_installed - Test installed package"
+	@echo ""
+	@echo "Utilities:"
+	@echo "  make check         - Check dependencies"
+	@echo "  make status        - Show build status"
+	@echo "  make debug         - Debug build"
+	@echo "  make rebuild       - Clean and rebuild"
+	@echo ""
+	@echo "Cleanup:"
 	@echo "  make clean         - Clean build files"
 	@echo "  make clean_all     - Clean all generated files"
-	@echo "  make help          - Show this help"
+	@echo "  make distclean     - Full clean + uninstall"
 	@echo ""
-	@echo "Source files:"
-	@echo "  Fortran: $(FORTRAN_SOURCES)"
-	@echo "  Python module: $(MODULE_NAME)"
+	@echo "Options:"
+	@echo "  BUILD_MODE=debug   - Build with debug flags"
 	@echo ""
 	@echo "Compiler: $(FC) $(FFLAGS)"
+	@echo "Python:   $(PYTHON)"
 
 .DEFAULT_GOAL := all

@@ -77,8 +77,8 @@ cd coils2vmec
 # Install Python build dependencies
 pip install f90wrap numpy
 
-# Compile Fortran extensions
-make
+# Compile Fortran extensions (Makefile moved to src/fortran)
+make -C src/fortran
 
 # Install the package in editable mode (recommended for development)
 pip install -e .
@@ -88,7 +88,7 @@ pip install .
 ```
 
 **Installation Steps:**
-1. **`make`** - Compiles Fortran code and generates Python wrappers using f90wrap
+1. **`make -C src/fortran`** - Compiles Fortran code and generates Python wrappers using f90wrap
 2. **`pip install -e .`** - Installs the Python package in editable mode
 
 ### Verify Installation
@@ -163,7 +163,7 @@ See [`examples/example_pwO.py`](examples/example_pwO.py) for a full working exam
 
 ```bash
 cd examples
-python example_pwO.py
+python example_CNH1.py
 ```
 
 ### Example 2: Jupyter Notebook Workflow
@@ -194,21 +194,21 @@ config.alpha = 0.8      # Step size
 ```
 coils2vmec/
 ├── src/
-│   └── coils2vmec/
-│       ├── __init__.py          # Package exports
-│       ├── fieldline.py         # Fieldline tracing
-│       ├── iota.py              # Rotational transform
-│       ├── lcfs.py              # LCFS detection
-│       ├── descur.py            # DESCUR interface
-│       ├── descur_python.py     # DESCUR implementation
-│       ├── plotting.py          # Visualization
-│       ├── utils.py             # Utilities
-│       ├── fieldline_tracer.py  # f90wrap interface
-│       └── fortran/             # Fortran sources
-│           ├── fieldline_tracer_module.f90
-│           ├── DLSODE.f
-│           ├── hybrd.f
-│           └── traceline.f90
+│   ├── coils2vmec/
+│   │   ├── __init__.py          # Package exports
+│   │   ├── fieldline.py         # Fieldline tracing
+│   │   ├── iota.py              # Rotational transform
+│   │   ├── lcfs.py              # LCFS detection
+│   │   ├── descur.py            # DESCUR interface
+│   │   ├── descur_python.py     # DESCUR implementation
+│   │   ├── plotting.py          # Visualization
+│   │   ├── utils.py             # Utilities
+│   │   ├── fieldline_tracer.py  # f90wrap interface
+│   └── fortran/                 # Fortran sources (moved up from coils2vmec/)
+│       ├── fieldline_tracer_module.f90
+│       ├── DLSODE.f
+│       ├── hybrd.f
+│       └── traceline.f90
 ├── examples/                     # Example scripts
 ├── test/                         # Test data
 ├── setup.py                      # Build configuration
@@ -259,11 +259,8 @@ Full API documentation: [docs/API.md](docs/API.md) *(coming soon)*
 # Set Fortran compiler (optional)
 export FC=gfortran
 
-# Enable verbose output
-export COILS2VMEC_VERBOSE=1
-
-# Set number of parallel workers
-export COILS2VMEC_WORKERS=8
+# Build Fortran (if building separately)
+make -C src/fortran
 ```
 
 ### Configuration Files

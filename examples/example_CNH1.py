@@ -18,10 +18,10 @@ sys.path.insert(0, str(package_dir))
 
 from simsopt.field import BiotSavart, load_coils_from_makegrid_file
 from simsopt.geo import SurfaceRZFourier, ToroidalFlux
-from coils2vmec import DescurConfig
+from python import DescurConfig
 
 # Import all needed functions from coils2vmec package
-import coils2vmec as c2v
+import python as c2v
 
 # =============================================================================
 # Configuration Parameters

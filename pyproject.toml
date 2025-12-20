@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "coils2vmec"
-version = "0.2.0"
+version = "0.1.0"
 description = "Magnetic field line tracer and VMEC interface for coil analysis"
 readme = "README.md"
 license = {text = "MIT"}
@@ -18,6 +18,8 @@ dependencies = [
     "numpy>=1.15",
     "scipy>=1.0",
     "matplotlib>=3.0",
+    "h5py>=2.10",
+    "f90wrap>=0.2.6",
 ]
 
 [project.optional-dependencies]
@@ -37,16 +39,22 @@ build = [
     "numpy>=1.15",
 ]
 
-[project.urls]
-Homepage = "https://github.com/yourusername/coils2vmec"
-"Bug Reports" = "https://github.com/yourusername/coils2vmec/issues"
-"Source Code" = "https://github.com/yourusername/coils2vmec"
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["coils2vmec*"]
+
+[tool.setuptools.package-data]
+"coils2vmec" = [
+    "*.so",
+    "*.pyd",
+    "_fieldline_tracer*.so",
+    "_fieldline_tracer*.pyd",
+    "fieldline_tracer.py",
+    "f90wrap_*.py",
+]
 
 [tool.black]
 line-length = 100
