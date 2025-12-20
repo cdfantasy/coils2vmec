@@ -4,7 +4,7 @@
 
 # Compiler settings
 FC = gfortran
-FFLAGS = -O2 -fPIC -Wall -Wextra -fall-intrinsics
+FFLAGS = -O3 -fPIC -Wall -Wextra -fall-intrinsics
 FFLAGS_DEBUG = -g -fPIC -Wall -Wextra -fcheck=all -fbacktrace
 LDFLAGS = -shared
 
