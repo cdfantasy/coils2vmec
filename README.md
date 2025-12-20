@@ -78,7 +78,7 @@ cd coils2vmec
 pip install f90wrap numpy
 
 # Compile Fortran extensions (Makefile moved to src/fortran)
-make -C src/fortran
+make 
 
 # Install the package in editable mode (recommended for development)
 pip install -e .
