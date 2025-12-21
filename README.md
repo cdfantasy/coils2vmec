@@ -260,7 +260,7 @@ Full API documentation: [docs/API.md](docs/API.md) *(coming soon)*
 export FC=gfortran
 
 # Build Fortran (if building separately)
-make -C src/fortran
+make
 ```
 
 ### Configuration Files
