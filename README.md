@@ -159,7 +159,7 @@ c2v.save_vmec_input_for_surface(
 
 ### Example 1: Complete H1 Device Analysis
 
-See [`examples/example_pwO.py`](examples/example_pwO.py) for a full working example:
+See [`examples/example_CNH1.py`](examples/example_CNH1.py) for a full working example:
 
 ```bash
 cd examples
