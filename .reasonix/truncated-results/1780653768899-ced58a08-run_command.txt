@@ -1,0 +1,327 @@
+$ rm -rf /Users/zkgao/code/coils2vmec/build_test && conda run -n simsopt cmake -B /Users/zkgao/code/coils2vmec/build_test -S /Users/zkgao/code/coils2vmec 2>&1 && conda run -n simsopt cmake --build /Users/zkgao/code/coils2vmec/build_test --target coils2vmec_python_ext 2>&1
+[exit 0]
+-- The Fortran compiler identification is GNU 15.2.0
+-- The C compiler identification is Clang 21.1.8
+-- Checking whether Fortran compiler has -isysroot
+-- Checking whether Fortran compiler has -isysroot - yes
+-- Checking whether Fortran compiler supports OSX deployment target flag
+-- Checking whether Fortran compiler supports OSX deployment target flag - yes
+-- Detecting Fortran compiler ABI info
+-- Detecting Fortran compiler ABI info - done
+-- Check for working Fortran compiler: /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran - skipped
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /Users/zkgao/miniconda3/envs/simsopt/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Found Python: /Users/zkgao/miniconda3/envs/simsopt/bin/python3.11 (found version "3.11.11") found components: Interpreter Development.Module
+-- Configuring done (3.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/zkgao/code/coils2vmec/build_test
+
+[ 25%] Building Fortran object src/fortran/CMakeFiles/fieldline_fortran_obj.dir/fieldline_tracer_module.f90.o
+[ 50%] Building Fortran object src/fortran/CMakeFiles/fieldline_fortran_obj.dir/DLSODE.f.o
+[ 50%] Built target fieldline_fortran_obj
+[ 75%] Generating f90wrap interfaces
+[100%] Building Python extension with f2py
+running build
+running config_cc
+INFO: unifying config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+INFO: unifying config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+INFO: build_src
+INFO: building extension "_fieldline_tracer" sources
+INFO: f2py options: []
+INFO: f2py:> /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c
+creating /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11
+Reading f2cmap from '.f2py_f2cmap' ...
+Successfully applied user defined f2cmap changes
+Reading fortran codes...
+	Reading file '/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90' (format:free)
+Line #16 in /Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:"          intent(hide), depend(coils_data) :: f90wrap_n0 = shape(coils_data,0)"
+	analyzeline: cannot handle multiple attributes without type specification. Ignoring ' depend(coils_data)'.
+Line #18 in /Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:"          intent(hide), depend(coils_data) :: f90wrap_n1 = shape(coils_data,1)"
+	analyzeline: cannot handle multiple attributes without type specification. Ignoring ' depend(coils_data)'.
+Line #35 in /Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:"          intent(hide), depend(fieldline_data) :: f90wrap_n0 = shape(fieldline_data,0)"
+	analyzeline: cannot handle multiple attributes without type specification. Ignoring ' depend(fieldline_data)'.
+Line #37 in /Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:"          intent(hide), depend(fieldline_data) :: f90wrap_n1 = shape(fieldline_data,1)"
+	analyzeline: cannot handle multiple attributes without type specification. Ignoring ' depend(fieldline_data)'.
+Post-processing...
+	Block: _fieldline_tracer
+			Block: f90wrap_fieldline_tracer__set_verbose
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__set_verbose
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__set_verbose
+			Block: f90wrap_fieldline_tracer__initialize_coils
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__initialize_coils
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__initialize_coils
+			Block: f90wrap_fieldline_tracer__cleanup_coils
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__cleanup_coils
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__cleanup_coils
+			Block: f90wrap_fieldline_tracer__trace_fieldlines
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__trace_fieldlines
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__trace_fieldlines
+			Block: f90wrap_fieldline_tracer__get_magnetic_field
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__get_magnetic_field
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__get_magnetic_field
+			Block: f90wrap_fieldline_tracer__get__dp
+In: :_fieldline_tracer:/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90:f90wrap_fieldline_tracer__get__dp
+get_useparameters: no module fieldline_tracer info used by f90wrap_fieldline_tracer__get__dp
+Applying post-processing hooks...
+  character_backward_compatibility_hook
+Post-processing (stage 2)...
+Building modules...
+    Building module "_fieldline_tracer"...
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__set_verbose"...
+          f90wrap_fieldline_tracer__set_verbose(verbose)
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__initialize_coils"...
+          f90wrap_fieldline_tracer__initialize_coils(coils_data)
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__cleanup_coils"...
+          f90wrap_fieldline_tracer__cleanup_coils()
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__trace_fieldlines"...
+          f90wrap_fieldline_tracer__trace_fieldlines(nturn,nphi,initial_rz,fieldline_data)
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__get_magnetic_field"...
+          f90wrap_fieldline_tracer__get_magnetic_field(fieldpos,field)
+    Generating possibly empty wrappers"
+    Maybe empty "_fieldline_tracer-f2pywrappers.f"
+        Constructing wrapper function "f90wrap_fieldline_tracer__get__dp"...
+          f90wrap_dp = f90wrap_fieldline_tracer__get__dp()
+    Wrote C/API module "_fieldline_tracer" to file "/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c"
+INFO:   adding '/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/fortranobject.c' to sources.
+INFO:   adding '/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11' to include_dirs.
+copying /Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/numpy/f2py/src/fortranobject.c -> /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11
+copying /Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/numpy/f2py/src/fortranobject.h -> /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11
+INFO:   adding '/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracer-f2pywrappers.f' to sources.
+INFO: build_src: building npy-pkg config files
+running build_ext
+INFO: customize Compiler
+INFO: customize Compiler using build_ext
+INFO: get_default_fcompiler: matching types: '['gnu95', 'nag', 'nagfor', 'absoft', 'ibm', 'intel', 'gnu', 'g95', 'pg']'
+INFO: customize Gnu95FCompiler
+INFO: Found executable /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran
+INFO: Found executable /Users/zkgao/miniconda3/envs/simsopt/bin/arm64-apple-darwin20.0.0-ld
+INFO: Found executable /Users/zkgao/miniconda3/envs/simsopt/bin/arm64-apple-darwin20.0.0-ar
+INFO: Found executable /Users/zkgao/miniconda3/envs/simsopt/bin/arm64-apple-darwin20.0.0-ranlib
+INFO: customize Gnu95FCompiler
+INFO: customize Gnu95FCompiler using build_ext
+INFO: building '_fieldline_tracer' extension
+INFO: compiling C sources
+INFO: C compiler: clang -DNDEBUG -fwrapv -O2 -Wall -fPIC -O2 -isystem /Users/zkgao/miniconda3/envs/simsopt/include -arch arm64 -fPIC -O2 -isystem /Users/zkgao/miniconda3/envs/simsopt/include -arch arm64
+
+creating /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11
+INFO: compile options: '-DNPY_DISABLE_OPTIMIZATION=1 -I/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11 -I/Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/numpy/_core/include -I/Users/zkgao/miniconda3/envs/simsopt/include/python3.11 -c'
+INFO: clang: /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c
+INFO: clang: /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/fortranobject.c
+INFO: compiling Fortran sources
+INFO: Fortran f77 compiler: /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran -Wall -g -ffixed-form -fno-second-underscore -fPIC -O3
+Fortran f90 compiler: /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran -I/Users/zkgao/code/coils2vmec/src/fortran -I/Users/zkgao/code/coils2vmec/build_test/src/fortran -fPIC -O3
+Fortran fix compiler: /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran -Wall -g -ffixed-form -fno-second-underscore -I/Users/zkgao/code/coils2vmec/src/fortran -I/Users/zkgao/code/coils2vmec/build_test/src/fortran -fPIC -O3
+creating /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/Users/zkgao/code/coils2vmec/build_test/src
+INFO: compile options: '-I/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11 -I/Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/numpy/_core/include -I/Users/zkgao/miniconda3/envs/simsopt/include/python3.11 -c'
+INFO: gfortran:f90: /Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.f90
+INFO: gfortran:f77: /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracer-f2pywrappers.f
+INFO: /Users/zkgao/miniconda3/envs/simsopt/bin/gfortran -Wall -g -Wall -g -undefined dynamic_lookup -bundle /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.o /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/fortranobject.o /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/Users/zkgao/code/coils2vmec/build_test/src/f90wrap_fieldline_tracer_module.o /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracer-f2pywrappers.o /Users/zkgao/code/coils2vmec/build_test/src/fortran/CMakeFiles/fieldline_fortran_obj.dir/fieldline_tracer_module.f90.o /Users/zkgao/code/coils2vmec/build_test/src/fortran/CMakeFiles/fieldline_fortran_obj.dir/DLSODE.f.o -L/Users/zkgao/miniconda3/envs/simsopt/bin/../lib/gcc/arm64-apple-darwin20.0.0/15.2.0 -L/Users/zkgao/miniconda3/envs/simsopt/bin/../lib/gcc/arm64-apple-darwin20.0.0/15.2.0 -L/Users/zkgao/miniconda3/envs/simsopt/bin/../lib/gcc/arm64-apple-darwin20.0.0/15.2.0 -lgfortran -o ./_fieldline_tracer.cpython-311-darwin.so
+Removing build directory /var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq
+[100%] Built target coils2vmec_python_ext
+/Users/zkgao/code/coils2vmec/src/fortran/fieldline_tracer_module.f90:259:39:
+
+  259 |   subroutine jacobian_stub(neq, t, y, ml, mu, pd, nrowpd)
+      |                                       1~
+Warning: Unused dummy argument 'ml' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/fieldline_tracer_module.f90:259:43:
+
+  259 |   subroutine jacobian_stub(neq, t, y, ml, mu, pd, nrowpd)
+      |                                           1~
+Warning: Unused dummy argument 'mu' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/fieldline_tracer_module.f90:259:33:
+
+  259 |   subroutine jacobian_stub(neq, t, y, ml, mu, pd, nrowpd)
+      |                                 1
+Warning: Unused dummy argument 't' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/fieldline_tracer_module.f90:259:36:
+
+  259 |   subroutine jacobian_stub(neq, t, y, ml, mu, pd, nrowpd)
+      |                                    1
+Warning: Unused dummy argument 'y' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1261:10:
+
+ 1261 |       IF (TOUT .EQ. T) RETURN
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1809:10:
+
+ 1809 |       IF (COMP .NE. 1.0D0) GO TO 10
+      |          1
+Warning: Inequality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1377:10:
+
+ 1377 |       IF (H0 .NE. 0.0D0 .AND. (T + H0 - TCRIT)*H0 .GT. 0.0D0)
+      |          1
+Warning: Inequality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1421:10:
+
+ 1421 |       IF (H0 .NE. 0.0D0) GO TO 180
+      |          1
+Warning: Inequality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1434:12:
+
+ 1434 |         IF (AYI .NE. 0.0D0) TOL = MAX(TOL,ATOLI/AYI)
+      |            1
+Warning: Inequality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1506:10:
+
+ 1506 |  280  IF ((TN + H) .NE. TN) GO TO 290
+      |          1
+Warning: Inequality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2591:10:
+
+ 2591 |       IF (H .EQ. HOLD) GO TO 170
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2614:10:
+
+ 2614 |  160  IF (H .EQ. HOLD) GO TO 200
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2152:10:
+
+ 2152 |       IF (R0 .EQ. 0.0D0) R0 = 1.0D0
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3065:13:
+
+ 3065 |          IF (A(L,K) .EQ. 0.0D0) GO TO 40
+      |             1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3612:21:
+
+ 3612 |       IF (N.LE.0 .OR. DA.EQ.0.0D0) RETURN
+      |                     1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3097:10:
+
+ 3097 |       IF (A(N,N) .EQ. 0.0D0) INFO = N
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2189:12:
+
+ 2189 |         IF (ABS(DI) .EQ. 0.0D0) GO TO 330
+      |            1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2219:10:
+
+ 2219 |       IF (R0 .EQ. 0.0D0) R0 = 1.0D0
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3375:13:
+
+ 3375 |          IF (ABD(L,K) .EQ. 0.0D0) GO TO 100
+      |             1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3413:10:
+
+ 3413 |       IF (ABD(M,N) .EQ. 0.0D0) INFO = N
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2322:10:
+
+ 2322 |       IF (HL0 .EQ. PHL0) GO TO 330
+      |          1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2326:12:
+
+ 2326 |         IF (ABS(DI) .EQ. 0.0D0) GO TO 390
+      |            1
+Warning: Equality comparison for REAL(8) at (1) [-Wcompare-reals]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3904:37:
+
+ 3904 |       SUBROUTINE XERRWD (MSG, NMES, NERR, LEVEL, NI, I1, I2, NR, R1, R2)
+      |                                     1~~~
+Warning: Unused dummy argument 'nerr' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:3904:31:
+
+ 3904 |       SUBROUTINE XERRWD (MSG, NMES, NERR, LEVEL, NI, I1, I2, NR, R1, R2)
+      |                               1~~~
+Warning: Unused dummy argument 'nmes' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:2251:38:
+
+ 2251 |       SUBROUTINE DSOLSY (WM, IWM, X, TEM)
+      |                                      1~~
+Warning: Unused dummy argument 'tem' at (1) [-Wunused-dummy-argument]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:4067:28:
+
+ 4067 |       INTEGER FUNCTION IXSAV (IPAR, IVALUE, ISET)
+      |                            ^
+Warning: '__result_ixsav' may be used uninitialized [-Wmaybe-uninitialized]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1573:10:
+
+ 1573 |       IF (IHIT) T = TCRIT
+      |          ^
+Warning: 'ihit' may be used uninitialized [-Wmaybe-uninitialized]
+/Users/zkgao/code/coils2vmec/src/fortran/DLSODE.f:1221:15:
+
+ 1221 |       LOGICAL IHIT
+      |               ^~~~
+note: 'ihit' was declared here
+/Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/numpy/f2py/f2py2e.py:739: VisibleDeprecationWarning: 
+distutils has been deprecated since NumPy 1.26.x
+Use the Meson backend instead, or generate wrappers without -c and use a custom build script
+  builder = build_backend(
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+getctype: "real(kind=dp)" is mapped to C "float" (to override define dict(real = dict(dp="<C typespec>")) in /Users/zkgao/code/coils2vmec/build_test/src/.f2py_f2cmap file).
+/Users/zkgao/miniconda3/envs/simsopt/lib/python3.11/site-packages/setuptools/_distutils/cmd.py:90: SetuptoolsDeprecationWarning: setup.py install is deprecated.
+!!
+
+        ********************************************************************************
+        Please avoid running ``setup.py`` directly.
+        Instead, use pypa/build, pypa/installer or other
+        standards-based tools.
+
+        This deprecation is overdue, please update your project and remove deprecated
+        calls to avoid build errors in the future.
+
+        See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html for details.
+        ********************************************************************************
+
+!!
+  self.initialize_options()
+/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c:217:9: warning: misleading indentation; statement is not part of the previous 'if' [-Wmisleading-indentation]
+  217 |         verbose = (int)PyObject_IsTrue(verbose_capi);
+      |         ^
+/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c:211:5: note: previous statement is here
+  211 |     if (!PyArg_ParseTupleAndKeywords(capi_args,capi_keywds,\
+      |     ^
+/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c:462:9: warning: misleading indentation; statement is not part of the previous 'if' [-Wmisleading-indentation]
+  462 |         f2py_success = int_from_pyobj(&nturn,nturn_capi,"_fieldline_tracer.f90wrap_fieldline_tracer__trace_fieldlines() 1st argument (nturn) can't be converted to int");
+      |         ^
+/var/folders/zt/b8gyrwy96979dst7sf19k5hm0000gn/T/tmphlalnmoq/src.macosx-11.0-arm64-3.11/_fieldline_tracermodule.c:456:5: note: previous statement is here
+  456 |     if (!PyArg_ParseTupleAndKeywords(capi_args,capi_keywds,\
+      |     ^
+2 warnings generated.
+ld: warning: object file (/Users/zkgao/code/coils2vmec/build_test/src/fortran/CMakeFiles/fieldline_fortran_obj.dir/fieldline_tracer_module.f90.o) was built for newer macOS version (26.0) than being linked (11.0)
+ld: warning: object file (/Users/zkgao/code/coils2vmec/build_test/src/fortran/CMakeFiles/fieldline_fortran_obj.dir/DLSODE.f.o) was built for newer macOS version (26.0) than being linked (11.0)
+
+

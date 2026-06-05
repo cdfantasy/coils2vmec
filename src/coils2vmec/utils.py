@@ -193,5 +193,3 @@ def ensure_indata_and_closure_in_outcurve(output_directory):
             f.writelines(lines)
         print(f"✓ Updated file: {outcurve_path}")
 
-
-print("✓ Utility functions module loaded")

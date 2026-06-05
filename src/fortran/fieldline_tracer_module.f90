@@ -10,18 +10,18 @@ module fieldline_tracer
   implicit none
 
   ! Module parameters
-  integer, parameter :: dp = selected_real_kind(15, 307)  ! Double precision
-  real(dp), parameter :: pi = 3.14159265358979323846264338327950288420_dp
-  real(dp), parameter :: mu0 = 4.0_dp * pi * 1.0e-7_dp
-  real(dp), parameter :: permeability_constant = 1.0e-7_dp  ! Permeability factor
+  integer, parameter :: dp = 8  ! Double precision
+  real(8), parameter :: pi = 3.14159265358979323846264338327950288420_dp
+  real(8), parameter :: mu0 = 4.0_dp * pi * 1.0e-7_dp
+  real(8), parameter :: permeability_constant = 1.0e-7_dp  ! Permeability factor
 
   ! LSODE solver parameters
   integer, parameter :: lsode_neq = 2                  ! Number of equations
   integer, parameter :: lsode_mf = 10                  ! Adams-Moulton with functional iteration
   integer, parameter :: lsode_lrw = 20 + 16 * lsode_neq  ! Real workspace size
   integer, parameter :: lsode_liw = 20                 ! Integer workspace size
-  real(dp), parameter :: lsode_rtol = 0.0_dp           ! Relative tolerance
-  real(dp), parameter :: lsode_atol = 1.0e-13_dp       ! Absolute tolerance
+  real(8), parameter :: lsode_rtol = 0.0_dp           ! Relative tolerance
+  real(8), parameter :: lsode_atol = 1.0e-13_dp       ! Absolute tolerance
   integer, parameter :: lsode_itol = 1                 ! Scalar RTOL and ATOL
   integer, parameter :: lsode_itask = 1                ! Normal task
   integer, parameter :: lsode_istate = 1               ! First call
@@ -29,7 +29,7 @@ module fieldline_tracer
 
   ! Module-level variables for storing coil data
   ! These are accessible to all subroutines in the module
-  real(dp), allocatable, save :: coils_data_global(:, :)
+  real(8), allocatable, save :: coils_data_global(:, :)
   integer, save :: n_coils_global = 0
 
   ! Flag to indicate if coil data has been loaded
@@ -39,6 +39,7 @@ module fieldline_tracer
   logical, save :: verbose_mode = .false.
 
   private
+  public :: dp
   public :: trace_fieldlines, initialize_coils, cleanup_coils
   public :: get_magnetic_field  ! 添加新的公共接口
   public :: set_verbose  ! 添加设置verbose的接口
@@ -65,7 +66,7 @@ contains
   !============================================================================
   subroutine initialize_coils(coils_data)
     implicit none
-    real(dp), intent(in) :: coils_data(:, :)
+    real(8), intent(in) :: coils_data(:, :)
     
     integer :: n_coils
     
@@ -129,15 +130,15 @@ contains
 
     ! Arguments
     integer, intent(in) :: nturn, nphi
-    real(dp), intent(in) :: initial_rz(2)
-    real(dp), intent(out) :: fieldline_data(:, :)
+    real(8), intent(in) :: initial_rz(2)
+    real(8), intent(out) :: fieldline_data(:, :)
 
     ! Local variables
     integer :: i, n_points
     integer :: lsode_istate_local
-    real(dp) :: phi, phi_stop
-    real(dp) :: rz_current(lsode_neq)
-    real(dp), allocatable :: rwork(:), fieldpos(:), field(:)
+    real(8) :: phi, phi_stop
+    real(8) :: rz_current(lsode_neq)
+    real(8), allocatable :: rwork(:), fieldpos(:), field(:)
     integer, allocatable :: iwork(:)
 
     ! Calculate total number of points
@@ -167,7 +168,7 @@ contains
     ! Trace field lines
     do i = 1, n_points
       ! Calculate phi_stop for this integration step
-      phi_stop = phi + 2.0_dp * pi / real(nphi, kind=dp)
+      phi_stop = phi + 2.0_dp * pi / real(nphi, kind=8)
 
       ! Convert from cylindrical (R, Z) to Cartesian (x, y, z)
       fieldline_data(i, 1) = rz_current(1) * cos(phi)
@@ -210,15 +211,15 @@ contains
 
     ! Arguments (LSODE required interface)
     integer, intent(in) :: neq
-    real(dp), intent(in) :: t
-    real(dp), intent(in) :: v(neq)
-    real(dp), intent(out) :: vdot(neq)
+    real(8), intent(in) :: t
+    real(8), intent(in) :: v(neq)
+    real(8), intent(out) :: vdot(neq)
     
     ! Local variables
-    real(dp) :: r, z, phi
-    real(dp) :: fieldpos(3), field(3)
-    real(dp) :: br, bz, bphi
-    real(dp) :: zero_threshold
+    real(8) :: r, z, phi
+    real(8) :: fieldpos(3), field(3)
+    real(8) :: br, bz, bphi
+    real(8) :: zero_threshold
 
     ! Extract coordinates
     r = v(1)
@@ -258,8 +259,8 @@ contains
   subroutine jacobian_stub(neq, t, y, ml, mu, pd, nrowpd)
     implicit none
     integer, intent(in) :: neq, ml, mu, nrowpd
-    real(dp), intent(in) :: t, y(neq)
-    real(dp), intent(out) :: pd(nrowpd, neq)
+    real(8), intent(in) :: t, y(neq)
+    real(8), intent(out) :: pd(nrowpd, neq)
     ! This is a stub - Jacobian not used with MF=10
     pd = 0.0_dp
     return
@@ -277,18 +278,18 @@ contains
     implicit none
 
     ! Arguments
-    real(dp), intent(in) :: fieldpos(3)
-    real(dp), intent(out) :: field(3)
+    real(8), intent(in) :: fieldpos(3)
+    real(8), intent(out) :: field(3)
 
     ! Local variables
     integer :: i_coil
-    real(dp) :: x, y, z
-    real(dp) :: x0, y0, z0
-    real(dp) :: dlx, dly, dlz
-    real(dp) :: current
-    real(dp) :: distance, distance_cubed
-    real(dp) :: dx, dy, dz
-    real(dp) :: field_contrib(3)
+    real(8) :: x, y, z
+    real(8) :: x0, y0, z0
+    real(8) :: dlx, dly, dlz
+    real(8) :: current
+    real(8) :: distance, distance_cubed
+    real(8) :: dx, dy, dz
+    real(8) :: field_contrib(3)
 
     ! Extract field point coordinates
     x = fieldpos(1)
@@ -347,8 +348,8 @@ contains
   !============================================================================
   subroutine get_magnetic_field(fieldpos, field)
     implicit none
-    real(dp), intent(in) :: fieldpos(3)
-    real(dp), intent(out) :: field(3)
+    real(8), intent(in) :: fieldpos(3)
+    real(8), intent(out) :: field(3)
     
     if (.not. coils_initialized) then
       error stop "Error: Coil data not initialized. Call initialize_coils first."

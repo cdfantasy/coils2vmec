@@ -319,5 +319,3 @@ def run_descur_python(R_lines, Z_lines, Phi_lines, lcfs_idx,
         ensure_indata_and_closure_in_outcurve(output_directory)
         return None
 
-
-print("✓ DESCUR module loaded")

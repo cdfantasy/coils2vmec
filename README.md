@@ -73,12 +73,13 @@ sudo yum install gcc-gfortran python3-devel
 # Clone the repository
 git clone https://github.com/cdfantasy/coils2vmec.git
 cd coils2vmec
-
+conda activate your_env_name
+pip install -r requirements.txt
 # Install Python build dependencies
-pip install f90wrap numpy
 
-# Compile Fortran extensions
-make 
+pip install .
+
+
 
 # Install the package in editable mode (recommended for development)
 pip install -e .

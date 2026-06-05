@@ -1,6 +1,12 @@
 [build-system]
-requires = ["setuptools>=64", "wheel", "f90wrap>=0.2.6", "numpy>=1.15"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "scikit-build-core>=0.10",
+    "cmake>=3.18",
+    "ninja>=1.10",
+    "numpy>=1.19",
+    "f90wrap>=0.2",
+]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "coils2vmec"
@@ -39,22 +45,17 @@ build = [
     "numpy>=1.15",
 ]
 
-[tool.setuptools]
-package-dir = {"" = "src"}
+[project.urls]
+Homepage = "https://github.com/username/coils2vmec"
+Repository = "https://github.com/username/coils2vmec.git"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["coils2vmec*"]
+[tool.scikit-build]
+cmake.version = ">=3.18"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["src/coils2vmec"]
 
-[tool.setuptools.package-data]
-"coils2vmec" = [
-    "*.so",
-    "*.pyd",
-    "_fieldline_tracer*.so",
-    "_fieldline_tracer*.pyd",
-    "fieldline_tracer.py",
-    "f90wrap_*.py",
-]
+[tool.scikit-build.cmake.define]
+CMAKE_BUILD_TYPE = "Release"
 
 [tool.black]
 line-length = 100

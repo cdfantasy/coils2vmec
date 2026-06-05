@@ -218,5 +218,3 @@ def adjust_lcfs_avoid_rational_surface(lcfs_idx, iota, radius,
     
     return lcfs_idx
 
-
-print("✓ Iota calculation module loaded")

@@ -18,10 +18,10 @@ sys.path.insert(0, str(package_dir))
 
 from simsopt.field import BiotSavart, load_coils_from_makegrid_file
 from simsopt.geo import SurfaceRZFourier, ToroidalFlux
-from python import DescurConfig
+from coils2vmec import DescurConfig,fieldline_tracer
 
 # Import all needed functions from coils2vmec package
-import python as c2v
+import coils2vmec as c2v
 
 # =============================================================================
 # Configuration Parameters
@@ -90,10 +90,7 @@ if trace_flag:
     print(f"{'='*60}")
     
     # Import fieldline tracer module
-    try:
-        from fieldline_tracer import fieldline_tracer
-    except ImportError:
-        print("Warning: Could not import fieldline_tracer module")
+
     
     # Read coil data
     coils_data = c2v.read_coils_file(str(coil_file), extcur=extcur, save_discrete=True)

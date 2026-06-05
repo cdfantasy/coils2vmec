@@ -564,5 +564,3 @@ def plot_poincare_with_surface(surface, lcfs_idx, phi_array, R_matrix, Z_matrix,
     
     plt.show()
 
-
-print("✓ Plotting module loaded")

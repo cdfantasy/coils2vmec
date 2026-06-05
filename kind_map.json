@@ -1,8 +1,0 @@
-{
-  "selected_real_kind(15, 307)": "real64",
-  "selected_real_kind(6, 37)": "real32",
-  "selected_int_kind(9)": "int32",
-  "selected_int_kind(18)": "int64",
-  "character(len=*)": "string",
-  "logical": "logical"
-}

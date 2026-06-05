@@ -184,5 +184,3 @@ def find_lcfs_and_islands(radius, iota, threshold_factor=5.0,
 
     return lcfs_result
 
-
-print("✓ LCFS detection module loaded")

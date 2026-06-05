@@ -19,10 +19,8 @@ from scipy.optimize import root
 # Import fieldline_tracer module from package
 try:
     from .fieldline_tracer import fieldline_tracer
-    print("✓ Successfully imported fieldline_tracer module")
     fieldline_tracer.set_verbose(False)
-except ImportError as e:
-    print(f"✗ Import failed: {e}")
+except ImportError:
     fieldline_tracer = None
 
 
@@ -552,5 +550,3 @@ def load_fieldlines_hdf5(filename):
         'lcfs_rz': lcfs_rz
     }
 
-
-print("✓ Fieldline tracing module loaded")
