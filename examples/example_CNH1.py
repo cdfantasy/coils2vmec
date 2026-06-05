@@ -18,10 +18,9 @@ sys.path.insert(0, str(package_dir))
 
 from simsopt.field import BiotSavart, load_coils_from_makegrid_file
 from simsopt.geo import SurfaceRZFourier, ToroidalFlux
-from coils2vmec import DescurConfig,fieldline_tracer
+from coils2vmec import DescurConfig,initialize_coils, trace_fieldlines_parallel, save_fieldlines_hdf5, load_fieldlines_hdf5,coils_with_extcur, read_coils_file, find_axis, set_fortran_verbose, calculate_iota_profile, find_lcfs_and_islands, adjust_lcfs_avoid_rational_surface, plot_iota_with_radius, plot_fieldlines_3d, plot_poincare_sections, plot_poincare_with_surface, save_vmec_input_for_surface, run_descur_python
 
 # Import all needed functions from coils2vmec package
-import coils2vmec as c2v
 
 # =============================================================================
 # Configuration Parameters
@@ -55,7 +54,7 @@ config.ftol = 2e-6
 config.niter = 500
 
 # Control flags
-trace_flag = False      # Perform fieldline tracing
+trace_flag = True      # Perform fieldline tracing
 descur_flag = True     # Generate and run DESCUR
 plot_flag = False      # Master switch for plotting
 
@@ -72,7 +71,7 @@ coilpath = str(coil_file)
 coils = load_coils_from_makegrid_file(filename=coilpath, order=20, ppp=36)
 
 if extcur is not None:
-    c2v.coils_with_extcur(coils, extcur)
+    coils_with_extcur(coils, extcur)
 
 bs_tf = BiotSavart(coils)
 
@@ -93,19 +92,19 @@ if trace_flag:
 
     
     # Read coil data
-    coils_data = c2v.read_coils_file(str(coil_file), extcur=extcur, save_discrete=True)
+    coils_data = read_coils_file(str(coil_file), extcur=extcur, save_discrete=True)
     
     # Initialize coils in Fortran module
-    fieldline_tracer.initialize_coils(coils_data)
-    fieldline_tracer.set_verbose(False)
+    initialize_coils(coils_data)
+    set_fortran_verbose(False)
     
     print(f"\nStep 2: Parallel trace for {nlines} fieldlines")
     
     # Find magnetic axis
-    c2v.find_axis(initial_rz, xtol=1e-10, max_iter=200)
+    find_axis(initial_rz, xtol=1e-10, max_iter=200)
     
     # Trace fieldlines in parallel
-    fieldlines_data = c2v.trace_fieldlines_parallel(
+    fieldlines_data = trace_fieldlines_parallel(
         initial_guess=initial_rz,
         n_fieldlines=nlines,
         nturn=nturn,
@@ -121,7 +120,7 @@ if trace_flag:
     print(f"  LCFS: R={fieldlines_data['lcfs_rz'][0]:.6f}, Z={fieldlines_data['lcfs_rz'][1]:.6f}")
     
     # Save to HDF5
-    c2v.save_fieldlines_hdf5(fieldlines_data, str(hdf5_file), compress=True)
+    save_fieldlines_hdf5(fieldlines_data, str(hdf5_file), compress=True)
 
 # =========================================================================
 # Step 2: Data Processing and Iota Analysis
@@ -130,7 +129,7 @@ if trace_flag:
 print("\u2713 Reshaping fieldline data")
 
 # Load from HDF5
-fieldlines_data = c2v.load_fieldlines_hdf5(str(hdf5_file))
+fieldlines_data = load_fieldlines_hdf5(str(hdf5_file))
 nline = fieldlines_data['nline']
 nphi = fieldlines_data['nphi']
 nturn = fieldlines_data['nturn']
@@ -150,7 +149,7 @@ Phi_lines = np.arctan2(Y_lines, X_lines)
 Phi_lines = np.mod(Phi_lines, 2*np.pi)
 
 # Compute iota profile
-iota_results = c2v.calculate_iota_profile(X_lines, Y_lines, Z_lines, nturn, nphi, nline)
+iota_results = calculate_iota_profile(X_lines, Y_lines, Z_lines, nturn, nphi, nline)
 iota = iota_results['iota']
 iota_err = iota_results['iota_err']
 rho_mean = iota_results['rho_mean']
@@ -158,7 +157,7 @@ rho_std = iota_results['rho_std']
 radius = R_lines[1:, 0, 0]
 
 # Find LCFS and islands
-lcfs_result = c2v.find_lcfs_and_islands(
+lcfs_result = find_lcfs_and_islands(
     radius, iota, 
     threshold_factor=15, 
     cooldown_factor=5.0, 
@@ -170,7 +169,7 @@ island_array = lcfs_result['island_array'] if lcfs_result is not None else []
 ddiota_dr = lcfs_result['ddiota_dr'] if lcfs_result is not None else None
 
 # Adjust LCFS to avoid rational surfaces
-lcfs_idx = c2v.adjust_lcfs_avoid_rational_surface(
+lcfs_idx = adjust_lcfs_avoid_rational_surface(
     lcfs_idx, iota, radius,
     max_order=10,
     tolerance=0.1,
@@ -182,7 +181,7 @@ if lcfs_idx is not None:
 
 # Optional plotting
 if plot_flag:
-    c2v.plot_iota_with_radius(iota, R_lines[1:, 0, 0], iota_err, lcfs_index=lcfs_idx)
+    plot_iota_with_radius(iota, R_lines[1:, 0, 0], iota_err, lcfs_index=lcfs_idx)
 
 # Fit iota profile
 s = (np.linspace(0, rho_mean[lcfs_idx], lcfs_idx, endpoint=True) / rho_mean[lcfs_idx])**2
@@ -196,11 +195,11 @@ print(f"LCFS fieldline R max: {Rlines_lcfs[0, 0]} m")
 # More optional plotting
 if plot_flag:
     fieldline_indices_to_plot = [0, lcfs_idx-1]
-    c2v.plot_fieldlines_3d(X_lines, Y_lines, Z_lines, B_lines, 
-                            fieldline_indices_to_plot, 
-                            title='Selected Magnetic Fieldlines 3D')
-    c2v.plot_poincare_sections(R_lines, Z_lines, phi_angles_deg=[0, 180], 
-                                lcfs_index=lcfs_idx, POINT_SIZE=0.5, 
+    plot_fieldlines_3d(X_lines, Y_lines, Z_lines, B_lines, 
+                       fieldline_indices_to_plot, 
+                       title='Selected Magnetic Fieldlines 3D')
+    plot_poincare_sections(R_lines, Z_lines, phi_angles_deg=[0, 180], 
+                           lcfs_index=lcfs_idx, POINT_SIZE=0.5, 
                                 island_array=island_array, color_islands=False, 
                                 title_suffix='(Colored by Flux Surface Region)')
 
@@ -212,7 +211,7 @@ outcurve_path = output_directory / 'outcurve'
 
 if descur_flag:
     print(f"✓ Generate and run DESCUR, output dir: {outcurve_path.name}")
-    c2v.run_descur_python(
+    run_descur_python(
         R_lines=R_lines,
         Z_lines=Z_lines,
         Phi_lines=Phi_lines,
@@ -263,13 +262,13 @@ print(f"Toroidal flux at LCFS: {phiedge:.6e} Wb")
 if plot_flag:
     phi_array = np.linspace(0, 360, 12, endpoint=False)
     output_path = Path(output_directory)
-    c2v.plot_poincare_with_surface(
+    plot_poincare_with_surface(
         surface, lcfs_idx, phi_array, R_lines, Z_lines, lcfs_idx, 
         figsize=(20, 60), plot_all=False
     )
 
 # Save VMEC input file
-c2v.save_vmec_input_for_surface(surface, bs_tf, extcur, mpol, ntor, lasym, nfp, vmec_output_dir, tag=tag, device_name=device_name, AI=AI, vmec_run=False)
+save_vmec_input_for_surface(surface, bs_tf, extcur, mpol, ntor, lasym, nfp, vmec_output_dir, tag=tag, device_name=device_name, AI=AI, vmec_run=False)
 
 print("\n✓ All steps completed successfully!")
 

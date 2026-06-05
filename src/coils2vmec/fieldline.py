@@ -18,11 +18,34 @@ from scipy.optimize import root
 
 # Import fieldline_tracer module from package
 try:
-    from .fieldline_tracer import fieldline_tracer
-    fieldline_tracer.set_verbose(False)
+    from .fieldline_tracer import Fieldline_Tracer
+    Fieldline_Tracer.set_verbose(False)
 except ImportError:
-    fieldline_tracer = None
+    Fieldline_Tracer = None
+    print("Warning: Fieldline_Tracer module not found. Fieldline tracing functions will not work.")
 
+def initialize_coils(coils_data):
+    """
+    Initialize coils in the Fortran module.
+    
+    Parameters
+    ----------
+    coils_data : ndarray
+        Discrete coil data array (n_points x 4): [x, y, z, current]
+    """
+    if Fieldline_Tracer is not None:
+        Fieldline_Tracer.initialize_coils(coils_data)
+    else:
+        raise ImportError("Fieldline_Tracer module is not available. Cannot initialize coils.")
+
+def cleanup_coils():
+    """
+    Clean up coils in the Fortran module.
+    """
+    if Fieldline_Tracer is not None:
+        Fieldline_Tracer.cleanup_coils()
+    else:
+        raise ImportError("Fieldline_Tracer module is not available. Cannot clean up coils.")
 
 def set_fortran_verbose(verbose):
     """
@@ -33,8 +56,8 @@ def set_fortran_verbose(verbose):
     verbose : bool
         Whether to enable verbose output
     """
-    if fieldline_tracer is not None:
-        fieldline_tracer.set_verbose(verbose)
+    if Fieldline_Tracer is not None:
+        Fieldline_Tracer.set_verbose(verbose)
 
 
 def read_coils_file(filename, extcur=None, save_discrete=False):
@@ -172,7 +195,7 @@ def find_axis(initial_guess, xtol=1e-10, max_iter=200):
         fieldline_data = np.zeros((2*n_points, 4), dtype=np.float64, order='F')
         
         try:
-            fieldline_tracer.trace_fieldlines(2, n_points, initial_rz_array, fieldline_data)
+            Fieldline_Tracer.trace_fieldlines(2, n_points, initial_rz_array, fieldline_data)
             final_xyz = fieldline_data[n_points, :3]
             final_R = np.sqrt(final_xyz[0]**2 + final_xyz[1]**2)
             final_Z = final_xyz[2]
@@ -235,7 +258,7 @@ def find_lcfs(initial_guess, precision_order=1e-3, nturn=40, verbose=True):
         fieldline_data = np.zeros((nturn*nphi, 4), dtype=np.float64, order='F')
         
         try:
-            fieldline_tracer.trace_fieldlines(nturn, nphi, initial_rz, fieldline_data)
+            Fieldline_Tracer.trace_fieldlines(nturn, nphi, initial_rz, fieldline_data)
             last_points = fieldline_data[-5:, :]
             if np.all(np.abs(last_points) < 1e-10):
                 return True
@@ -326,20 +349,19 @@ def trace_single_fieldline(args):
     index, rz, nturn, nphi, coils_data = args
     
     set_fortran_verbose(False)
-    from .fieldline_tracer import fieldline_tracer
-    fieldline_tracer.initialize_coils(coils_data)
+    Fieldline_Tracer.initialize_coils(coils_data)
     
     n_points = nturn * nphi
     initial_rz = np.array(rz, dtype=np.float64, order='F')
     fieldline_data = np.zeros((n_points, 4), dtype=np.float64, order='F')
     
     try:
-        fieldline_tracer.trace_fieldlines(nturn, nphi, initial_rz, fieldline_data)
+        Fieldline_Tracer.trace_fieldlines(nturn, nphi, initial_rz, fieldline_data)
         return (index, fieldline_data, True, None)
     except Exception as e:
         return (index, None, False, str(e))
     finally:
-        fieldline_tracer.cleanup_coils()
+        Fieldline_Tracer.cleanup_coils()
 
 
 def trace_fieldlines_parallel(initial_guess, n_fieldlines, nturn=100, nphi=360, 

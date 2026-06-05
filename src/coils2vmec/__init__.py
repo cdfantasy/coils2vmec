@@ -13,6 +13,8 @@ __version__ = "0.1.0"
 
 # Import main functions for easy access
 from .fieldline import (
+    initialize_coils,
+    cleanup_coils,
     set_fortran_verbose,
     read_coils_file,
     find_axis,
@@ -62,6 +64,8 @@ from .plotting import (
 
 __all__ = [
     # Fieldline functions
+    'initialize_coils',
+    'cleanup_coils',
     'set_fortran_verbose',
     'read_coils_file',
     'find_axis',
