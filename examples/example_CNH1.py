@@ -18,7 +18,7 @@ sys.path.insert(0, str(package_dir))
 
 from simsopt.field import BiotSavart, load_coils_from_makegrid_file
 from simsopt.geo import SurfaceRZFourier, ToroidalFlux
-from coils2vmec import DescurConfig,initialize_coils, trace_fieldlines_parallel, save_fieldlines_hdf5, load_fieldlines_hdf5,coils_with_extcur, read_coils_file, find_axis, set_fortran_verbose, calculate_iota_profile, find_lcfs_and_islands, adjust_lcfs_avoid_rational_surface, plot_iota_with_radius, plot_fieldlines_3d, plot_poincare_sections, plot_poincare_with_surface, save_vmec_input_for_surface, run_descur_python
+from coils2vmec import DescurConfig,initialize_coils, trace_fieldlines_parallel, save_fieldlines_hdf5, load_fieldlines_hdf5,coils_with_extcur, read_coils_file, find_axis, set_fortran_verbose, calculate_iota_profile, find_lcfs_and_islands, adjust_lcfs_avoid_rational_surface, plot_iota_with_radius, plot_fieldlines_3d, plot_poincare_sections, plot_poincare_with_surface, save_vmec_input_for_surface, run_descur_python,find_lcfs
 
 # Import all needed functions from coils2vmec package
 
@@ -101,11 +101,12 @@ if trace_flag:
     print(f"\nStep 2: Parallel trace for {nlines} fieldlines")
     
     # Find magnetic axis
-    find_axis(initial_rz, xtol=1e-10, max_iter=200)
-    
+    axis_rz = find_axis(initial_rz, xtol=1e-10, max_iter=200)
+    lcfs_rz = find_lcfs(initial_rz, precision_order=1e-3, verbose=True)
     # Trace fieldlines in parallel
     fieldlines_data = trace_fieldlines_parallel(
-        initial_guess=initial_rz,
+        axis_rz=axis_rz,
+        lcfs_rz=lcfs_rz,
         n_fieldlines=nlines,
         nturn=nturn,
         nphi=nphi,

@@ -364,15 +364,17 @@ def trace_single_fieldline(args):
         Fieldline_Tracer.cleanup_coils()
 
 
-def trace_fieldlines_parallel(initial_guess, n_fieldlines, nturn=100, nphi=360, 
+def trace_fieldlines_parallel(axis_rz, lcfs_rz, n_fieldlines, nturn=100, nphi=360, 
                               coils_data=None, n_workers=None):
     """
     Uniformly sample flux surfaces between axis and LCFS and trace in parallel.
     
     Parameters
     ----------
-    initial_guess : array_like
-        Initial (R, Z) guess for axis/LCFS search
+    axis_rz : array_like
+        (R, Z) position of the magnetic axis
+    lcfs_rz : array_like
+        (R, Z) position of the LCFS
     n_fieldlines : int
         Number of fieldlines to trace
     nturn : int, optional
@@ -399,11 +401,7 @@ def trace_fieldlines_parallel(initial_guess, n_fieldlines, nturn=100, nphi=360,
         - 'nline', 'nphi', 'nturn': tracing parameters
     """
     print(f"\nTracing {n_fieldlines} fieldlines in parallel...")
-    
-    axis_rz = find_axis(initial_guess, xtol=1e-10, max_iter=200)
     print(f"  Axis: R={axis_rz[0]:.6f}, Z={axis_rz[1]:.6f}")
-    
-    lcfs_rz = find_lcfs(initial_guess, precision_order=1e-3, verbose=True)
     print(f"  LCFS: R={lcfs_rz[0]:.6f}, Z={lcfs_rz[1]:.6f}")
     
     if coils_data is None:
