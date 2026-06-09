@@ -245,8 +245,15 @@ class DescurFitter:
         # Ensure the first toroidal angle is zero
         phi_lcfs_reordered[0, :] = 0
         
-        # Total number of toroidal angles
+        # Total number of toroidal angles (full torus)
         nphi_total = R_lcfs.shape[0]
+        
+        # Truncate phi range to one field period [0, 2π/nfp]
+        nphi_one_period = nphi_total // nfp
+        R_lcfs_reordered = R_lcfs_reordered[:nphi_one_period]
+        Z_lcfs_reordered = Z_lcfs_reordered[:nphi_one_period]
+        phi_lcfs_reordered = phi_lcfs_reordered[:nphi_one_period]
+        nphi_total = nphi_one_period
         
         # Select toroidal angle indices for output (uniform sampling)
         descur_idx = np.linspace(0, nphi_total, nphi_descur, endpoint=False).astype(int)
@@ -1172,7 +1179,8 @@ class DescurFitter:
             f.write("VMEC NAMELIST FORMAT:\n")
             f.write("="*70 + "\n\n")
             f.write("&indata\n")
-            f.write("lasym = .T.\n")
+            f.write(f"NFP  = {self.nfp}\n\n")
+            # f.write("lasym = .T.\n")
             for m in range(self.mpol):
                 for n_idx in range(2*self.nphi2 + 1):
                     n = n_idx - self.nphi2

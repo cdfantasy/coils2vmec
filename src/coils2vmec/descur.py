@@ -94,8 +94,15 @@ def save_lcfs_for_descur(R_lines, Z_lines, Phi_lines, lcfs_idx, nfp=1,
     # Ensure first toroidal angle is 0
     phi_lcfs_reordered[0, :] = 0
     
-    # Get total toroidal angle points
+    # Get total toroidal angle points (full torus)
     nphi = R_lcfs.shape[0]
+    
+    # Truncate phi range to one field period [0, 2π/nfp]
+    nphi_one_period = nphi // nfp
+    R_lcfs_reordered = R_lcfs_reordered[:nphi_one_period]
+    Z_lcfs_reordered = Z_lcfs_reordered[:nphi_one_period]
+    phi_lcfs_reordered = phi_lcfs_reordered[:nphi_one_period]
+    nphi = nphi_one_period
     
     # Select toroidal angle indices for output
     descur_idx = np.linspace(0, nphi, nphi_descur, endpoint=False).astype(int)

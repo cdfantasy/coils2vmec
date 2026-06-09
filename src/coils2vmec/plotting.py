@@ -516,6 +516,7 @@ def plot_poincare_with_surface(surface, lcfs_idx, phi_array, R_matrix, Z_matrix,
         
         # Convert angle to index
         phi_deg = int(phi_deg) % 360
+        nfp = surface.nfp
         phi_idx = phi_deg / 180 * np.pi
         cross_pts = surface.cross_section(phi_idx, thetas=100)
         R = np.sqrt(cross_pts[:, 0]**2 + cross_pts[:, 1]**2)
